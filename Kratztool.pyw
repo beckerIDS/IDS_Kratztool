@@ -25,6 +25,7 @@ USAGE
 
 
 """ Compile command for shell
+python -m nuitka --remove-output --enable-plugin=pyqt6 --enable-plugin=tk-inter --onefile .\Kratztool.pyw
 
 
 NOT POSSIBLE TO DO ON UNIVERSITY PC BECAUSE BIT DEFENDER INTERFERES!
