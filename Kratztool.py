@@ -405,6 +405,7 @@ class Kratzomat(QWidget):
             widget.setText('-')
             self.CUR_SPALTE = 0
             self.CUR_ZEILE = 0
+            self.PUNKTE_MATRIX_MITPUNKTEN[idx[0]][idx[1]] = 0
             self._highlightCurCell()
             self._EinzelPunkteSumme()
         
