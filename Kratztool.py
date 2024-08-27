@@ -231,7 +231,15 @@ class Kratzomat(QWidget):
             print(f"Unknown key pressed, ID: {a0.key()}")
     
 
-    def _to_roman_numeral(self,value):
+    def _to_roman_numeral(self,value: int) -> str:
+        """Private function to convert integer number to roman string
+
+        Args:
+            value (int): Value to convert
+
+        Returns:
+            str: Roman number of given value
+        """
         roman_map = {                                   # 1
             1: "I", 5: "V",
             10: "X", 50: "L", 
@@ -244,7 +252,6 @@ class Kratzomat(QWidget):
             if remainder > 0:
                 multiplier = i
                 roman_digit = roman_map[i]
-
                 times = remainder // multiplier         # 3
                 remainder = remainder % multiplier      # 4
                 result += roman_digit * times           # 4
