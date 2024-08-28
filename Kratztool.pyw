@@ -1,3 +1,20 @@
+"""
+Python 3 required
+
+Install required packages:
+$pip install -r requirements.txt$
+
+Create requirements.txt file if new packages have been used (ONLY WHEN USING VIRTUAL ENVIRONMENT):
+$pip freeze > requirements.txt$
+
+Command to pack tool to single .exe file
+$python -m nuitka --remove-output --enable-plugin=pyqt6 --enable-plugin=tk-inter --windows-console-mode=disable --onefile .\Kratztool.pyw$
+
+ToDo:
+-Alle int's die Spalten oder Zeilen definieren in Config schreiben und eindeutige Namen geben, wofür die jeweiligen Indizes stehen
+-Functionen die nicht Klassenspezifisch sind herauslösen und in ressources.functions schieben
+
+"""
 import sys
 import numpy as np
 from PyQt6.QtWidgets import QApplication, QWidget, QGridLayout, QLabel
@@ -7,52 +24,40 @@ import tkinter as tk
 from tkinter import simpledialog, messagebox
 import ast
 import darkdetect
+import logging
+from typing import Optional
+# Import custom packages
+import ressources.config as cfg
+import ressources.functions as fnc
 
-"""
-REQUIREMENTS
-Python Version > 3.6
-
-
-USAGE
-1. Mount path where Kratztool.py and  requirements.txt are located: SHIFT + RIGHTCLICK on folder where files are located -> Open in Terminal
-
-2. Install required packages: $pip install -r requirements.txt$
-
-3. Run this script: $python Kratztool.py$
-"""
+# Initialize logger
+log = logging.getLogger(__name__)
 
 
-
-
-""" Compile command for shell
-python -m nuitka --remove-output --enable-plugin=pyqt6 --enable-plugin=tk-inter --onefile .\Kratztool.pyw
-
-
-NOT POSSIBLE TO DO ON UNIVERSITY PC BECAUSE BIT DEFENDER INTERFERES!
-ALSO DELETES COMPILED EXECUTABLES!!!!
-"""
 def init_app() -> None:
     # Initialize Tkinter window
     application_window = tk.Tk()
     application_window.withdraw()
+    application_window.iconbitmap(default=cfg.ICON_FULLPATH)
     # Get valid User Input or cancel
     while True:
-        aufgaben = simpledialog.askstring(title="Hallo, bitte notwendigen Eingaben für Kratztool eingeben",
-            prompt="Bitte Aufgaben und zugehörige Punkte angeben (AUFGABE1:PUNKTE,AUFGABE2:PUNKTE,...)",
+        aufgaben = simpledialog.askstring(title=cfg.ASK_AUFGABEN_TITLE,
+            prompt=cfg.ASK_AUFGABEN_AUFFORDERUNG,
             parent=application_window,
-            initialvalue='"Kurzfragen": 15,"A7": 10,"A8": 10,"A9": 10')
+            initialvalue=cfg.STANDARD_AUFGABEN_STR
+            )
         if aufgaben is None: return
         try:
             aufgaben_dict = ast.literal_eval(f"{{{aufgaben}}}")
         except SyntaxError:
-            messagebox.showerror('ALARM', 'Eignabe entspricht nicht Dictionary Formatierung: AUFGABE1:PUNKTE,AUFGABE2:PUNKTE,...!!!')
+            messagebox.showerror('ALARM', cfg.ASK_AUFGABEN_DICT_ERROR)
             continue
         if not all([(item > 0 and item < 27) for item in aufgaben_dict.values()]):
-            messagebox.showerror('ALARM', 'Punkte pro Aufgabe muss größer 0 und kleiner 27 sein!!!')
+            messagebox.showerror('ALARM', cfg.ASK_AUFGABEN_PUNKTZAHL_ERROR)
             continue
         break
-    klausuren_pro_mappe = simpledialog.askinteger(title="Das ist der letzte Input, ich schwöre",
-        prompt="Wie viele Klausuren gibt es pro Mappe",
+    klausuren_pro_mappe = simpledialog.askinteger(title=cfg.ASK_ANZAHLKLAUSUREN_TITLE,
+        prompt=cfg.ASK_ANZAHLKLAUSUREN_AUFFORDERUNG,
         parent=application_window,
         initialvalue=8,
         minvalue=1,
@@ -69,15 +74,13 @@ def init_app() -> None:
     sys.exit(app.exec()) 
 
 class Kratzomat(QWidget):
-    key_up = Qt.Key.Key_Up.value
-    key_down = Qt.Key.Key_Down.value
-    key_left = Qt.Key.Key_Left.value
-    key_right = Qt.Key.Key_Right.value
-    key_esc = Qt.Key.Key_Escape.value
-    key_return = Qt.Key.Key_Return.value
-    key_delete = Qt.Key.Key_Delete.value
+    def __init__(self, KLAUSUREN_PRO_MAPPE: int = 8, AUFGABEN: dict = cfg.STANDARD_AUFGABEN_DICT):
+        """Initializer für das eigentliche Tool.
 
-    def __init__(self, KLAUSUREN_PRO_MAPPE: int = 8, AUFGABEN: dict = {"Kurzfragen": 15,"A7": 10,"A8": 10,"A9": 10}):
+        Args:
+            KLAUSUREN_PRO_MAPPE (int, optional): Anzahl der Klausuren pro Mappe. Defaults to 8.
+            AUFGABEN (dict, optional): Aufteilung der Punkteverteilung pro Aufgabe: {str("AUFGABE"):int(ANZAHL_PUNKTE),...}. Defaults to cfg.STANDARD_AUFGABEN_DICT.
+        """
         super().__init__()
         self.KLAUSUREN_PRO_MAPPE = KLAUSUREN_PRO_MAPPE
         self.AUFGABEN = AUFGABEN
@@ -99,7 +102,7 @@ class Kratzomat(QWidget):
         self.PUNKTE_ZEILEN, self.BUCHSTABEN_ZEILEN, self.PUNKTE_ZEILEN_GETRENNT = self._calcPointColumns()
         self.AUFGABEN_SUMMEN_POSITION = self._calcAufgabenSumPositions()
         self.initUI()
-        self.PUNKTE_MATRIX_MITWIDGETS, self.PUNKTE_MATRIX_MITPUNKTEN = self._initpunktematrix_widgets()       #   -> HIER WEITERMACHEN
+        self.PUNKTE_MATRIX_MITWIDGETS, self.PUNKTE_MATRIX_MITPUNKTEN = self._initpunktematrix_widgets()
         self.AUFGABEN_SUMMEN_MATRIX = self._calcAufgabenSumMatrix()
         self.ZEILENSUMMEN_WIDGET_VEKTOR = self._initZeilenSummenWidgetVektor()
         self.SPALTENSUMMEN_WIDGET_VEKTOR = self._initSpaltenSummenWidgetVektor()
@@ -116,7 +119,13 @@ class Kratzomat(QWidget):
         self.CUR_SPALTE = 0
         self._highlightCurCell()
 
-    def initUI(self):   
+
+    def initUI(self, alignment_header: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignVCenter):
+        """Füllt alle Widgets mit dem Starttext
+
+        Args:
+            alignment_header (Qt.AlignmentFlag, optional): Alignment des Textes der Header Widgets (GLAUBE ICH, MUSS NOCH BESTÖTIGT WERDEN). Defaults to Qt.AlignmentFlag.AlignVCenter.
+        """
         self.grid = QGridLayout()  
         self.setLayout(self.grid)
         self._widgets_points = list()
@@ -126,9 +135,7 @@ class Kratzomat(QWidget):
             row_span = None
             col_span = None
             if position == (0, 0):
-                # element = QPushButton("Clear")
-                # element.clicked.connect(self._resetAllPoints)
-                element = None                              # -> TEMPORÄRER FIX
+                element = None
             else:   # Alle anderen Instrumente sind QLabel's
                 # Labels unterscheiden sich nur im Text:
                 # X0,Y1: Mappe, damit roman Zahlen ersichtlich sind
@@ -170,7 +177,7 @@ class Kratzomat(QWidget):
                     text = None
                 # X0,Y-Range: Roman Zahlen für Mappen
                 elif position[1] == 0 and position[0] in self.romans:
-                    text = self._to_roman_numeral(position[0]-1)
+                    text = fnc._to_roman_numeral(position[0]-1)
                 # Buchstaben Übersicht
                 elif position[0] == 1 and position[1] in self.PUNKTE_ZEILEN:
                     text = self.BUCHSTABEN_ZEILEN[np.where(self.PUNKTE_ZEILEN == position[1])]
@@ -189,77 +196,49 @@ class Kratzomat(QWidget):
                 if (col_span is None) and (row_span is None):
                     self.grid.addWidget(element, *position)
                 else:
-                    #align = Qt.AlignmentFlag.AlignCenter
-                    #align = Qt.AlignmentFlag.AlignRight
-                    #align = Qt.AlignmentFlag.AlignLeft
-                    align = Qt.AlignmentFlag.AlignVCenter
-                    self.grid.addWidget(element, *position,row_span,col_span,align)
+                    self.grid.addWidget(element, *position,row_span,col_span,alignment_header)
         self.move(300, 150)
-        self.setWindowTitle('Kratztool: ESC reset all (dauert ein bisschen, pls chill bre), DEL reset single entry, UP 1, DOWN 0, LEFT and RIGHT to navigate')  
+        self.setWindowTitle(cfg.TOOL_TITLE)
+        self.setWindowIcon(QtGui.QIcon(cfg.ICON_FULLPATH))
         self.show()
 
-    def keyPressEvent(self, a0: QtGui.QKeyEvent) -> None:
-        for widget in self.children():
-            if isinstance(widget,QLabel):
-                pass
-                #print(f"Widget-Text: {widget.text()} at position x{widget.x()} - y{widget.y()}")
-            elif isinstance(widget,QGridLayout):
-                pass
-        if a0.key() == self.key_up:
-            # print("Key up pressed")
+
+    def keyPressEvent(self, a0: QtGui.QKeyEvent, debug_mode: Optional[bool] = False) -> None:
+        """Funktion um auf Tastatur Input zu reagieren
+
+        Args:
+            a0 (QtGui.QKeyEvent): Gedrückte Taste.
+            debug_mode (Optional[bool]): Gibt die aktuellen Texte aller Widgets in der Konsole aus. Defaults to False.
+        """
+        if debug_mode:
+            for widget in self.children():
+                if isinstance(widget,QLabel):
+                    log.debug(f"Widget-Text: {widget.text()} at position x{widget.x()} - y{widget.y()}")
+                elif isinstance(widget,QGridLayout):
+                    pass
+        if a0.key() == Qt.Key.Key_Up.value:
             self.setPoint(1)
             self._EinzelPunkteSumme()
             self.step(1)
-        elif a0.key() == self.key_down:
+        elif a0.key() == Qt.Key.Key_Down.value:
             self.setPoint()
             self._EinzelPunkteSumme()
             self.step(1)
-            # print("Key down pressed")
-        elif a0.key() == self.key_left:
-            # print("Key left pressed")
+        elif a0.key() == Qt.Key.Key_Left.value:
             self.step(-1)
-        elif a0.key() == self.key_right:
-            # print("Key right pressed")
+        elif a0.key() == Qt.Key.Key_Right.value:
             self.step(1)
-        elif a0.key() == self.key_esc:
-            # print("Key escape pressed")
+        elif a0.key() == Qt.Key.Key_Escape.value:
             if a0.key() != self.last_key: self._resetAllPoints()
-        elif a0.key() == self.key_return:
+        elif a0.key() == Qt.Key.Key_Return.value:
             pass
-            # print("Key return pressed")
-        elif a0.key() == self.key_delete:
+        elif a0.key() == Qt.Key.Key_Delete.value:
             self._resetSinglePoint(self.CUR_ZEILE,self.CUR_SPALTE)
         else:           
-            print(f"Unknown key pressed, ID: {a0.key()}")
+            log.warning(f"Unknown key pressed, ID: {a0.key()}, name {a0.text()}")
         self.last_key = a0.key()
     
 
-    def _to_roman_numeral(self,value: int) -> str:
-        """Private function to convert integer number to roman string
-
-        Args:
-            value (int): Value to convert
-
-        Returns:
-            str: Roman number of given value
-        """
-        roman_map = {                                   # 1
-            1: "I", 5: "V",
-            10: "X", 50: "L", 
-            100: "C", 500: "D",
-            1000: "M",
-        }
-        result = ""
-        remainder = value
-        for i in sorted(roman_map.keys(), reverse=True):# 2
-            if remainder > 0:
-                multiplier = i
-                roman_digit = roman_map[i]
-                times = remainder // multiplier         # 3
-                remainder = remainder % multiplier      # 4
-                result += roman_digit * times           # 4
-        return result
-    
     def _calcHeaderPositions(self) -> np.array:
         PUNKTE_PRO_AUFGABE_INKL_SIGMA = [x+1 for x in self.PUNKTE_PRO_AUFGABE] # Spaltenbreite muss um jeweils 1 erhöht werden damit Platz für SIGMA Zeichen ist
         aufgabenpos = np.zeros((self.AUFGABEN_PRO_KLASUR,4),int)
@@ -268,12 +247,13 @@ class Kratzomat(QWidget):
             aufgabenpos[idx][3] = val+1
         return aufgabenpos
     
+    
     def _calcAufgabenSumPositions(self) -> np.array:
         size = len(self.PUNKTE_PRO_AUFGABE)
         aufgabensum = np.zeros([1,size],int)
         for idx in range(size):
             aufgabensum[0][idx] = self.aufgabenpos[:,1][idx] + self.aufgabenpos[:,3][idx] - 1
-        #print(f"AufgabenSummenPosition: {aufgabensum}")
+        log.debug(f"AufgabenSummenPosition: {aufgabensum}")
         return aufgabensum
 
     def _calcPointColumns(self) -> np.array:
@@ -310,9 +290,9 @@ class Kratzomat(QWidget):
         elif next_c >= 0 and step < 0:
             self.CUR_SPALTE += step
         else:
-            print("Nichts verschoben")
+            log.debug("Nichts verschoben")
         self._highlightCurCell()
-        # print(f"CUR_SPALTE: {self.CUR_SPALTE}, CUR_ZEILE: {self.CUR_ZEILE}")
+        log.debug(f"CUR_SPALTE: {self.CUR_SPALTE}, CUR_ZEILE: {self.CUR_ZEILE}")
         
     def _EinzelPunkteSumme(self) -> None:
         for pos, widget in np.ndenumerate(self.PUNKTE_MATRIX_MITWIDGETS):
@@ -325,7 +305,7 @@ class Kratzomat(QWidget):
             # Loop over einzelne Aufgaben
             teilaufgabe_punkte_start = self.aufgabenpos[pos[1]][1]-self.PREFIX_SPALTEN-pos[1]
             teilaufgabe_punkte_ende = self.aufgabenpos[pos[1]][1] + self.aufgabenpos[pos[1]][3] - self.PREFIX_SPALTEN-1-pos[1]
-            # print(f"pos: {pos},anfang: {teilaufgabe_punkte_start}, ende: {teilaufgabe_punkte_ende}")
+            log.debug(f"pos: {pos},anfang: {teilaufgabe_punkte_start}, ende: {teilaufgabe_punkte_ende}")
             teilaufgabe_punkte = sum(self.PUNKTE_MATRIX_MITPUNKTEN[pos[0]][teilaufgabe_punkte_start:teilaufgabe_punkte_ende])
             # Prüfen, ob alle Punkte pro Teilaufgabe vergeben wurden
             einzelpunkte_widgets = self.PUNKTE_MATRIX_MITWIDGETS[pos[0]][teilaufgabe_punkte_start:teilaufgabe_punkte_ende]
@@ -389,7 +369,7 @@ class Kratzomat(QWidget):
                 # Get corresponding rows and colums of point fields
                 i_col = self.PUNKTE_ZEILEN[0][i_x]
                 i_row = self.PUNKTE_SPALTEN[i_y]
-                #print(f"({self.PUNKTE_ZEILEN[0][i_y]},{i_x})")
+                log.debug(f"({self.PUNKTE_ZEILEN[0][i_y]},{i_x})")
                 punktematrix_widgets[i_y][i_x] = self._getLabelfromCoord(i_row,i_col)
         return punktematrix_widgets, punktematrix_punkte
 
@@ -450,4 +430,5 @@ class Kratzomat(QWidget):
 
 
 if __name__ == '__main__':
+    fnc.start_log()
     init_app()
