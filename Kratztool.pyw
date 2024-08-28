@@ -106,6 +106,7 @@ class Kratzomat(QWidget):
         self.SUMMENSUMMEN_WIDGET = self._getLabelfromCoord(self.SUMME_ZEILEN-1,self.SUMME_SPALTEN-1)
         self._EinzelPunkteSumme()
         self._highlightPointSum()
+        self.last_key = None
         # Übersicht Koordinaten:
         # -> x entspricht SUMME_ZEILEN entspricht positions[1]
         # |
@@ -222,7 +223,7 @@ class Kratzomat(QWidget):
             self.step(1)
         elif a0.key() == self.key_esc:
             # print("Key escape pressed")
-            self._resetAllPoints()
+            if a0.key() != self.last_key: self._resetAllPoints()
         elif a0.key() == self.key_return:
             pass
             # print("Key return pressed")
@@ -230,6 +231,7 @@ class Kratzomat(QWidget):
             self._resetSinglePoint(self.CUR_ZEILE,self.CUR_SPALTE)
         else:           
             print(f"Unknown key pressed, ID: {a0.key()}")
+        self.last_key = a0.key()
     
 
     def _to_roman_numeral(self,value: int) -> str:
