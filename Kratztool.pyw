@@ -17,9 +17,9 @@ ToDo:
 """
 import sys
 import numpy as np
-from PyQt6.QtWidgets import QApplication, QWidget, QGridLayout, QLabel
-from PyQt6 import QtGui
-from PyQt6.QtCore import Qt
+from PySide6 import QtGui
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QLabel
 import tkinter as tk
 from tkinter import simpledialog, messagebox
 import ast
