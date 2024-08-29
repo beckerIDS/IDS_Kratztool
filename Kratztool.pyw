@@ -8,7 +8,7 @@ Create requirements.txt file if new packages have been used (ONLY WHEN USING VIR
 $pip freeze > requirements.txt$
 
 Command to pack tool to single .exe file
-$python -m nuitka --remove-output --enable-plugin=pyqt6 --enable-plugin=tk-inter --windows-console-mode=disable --onefile .\Kratztool.pyw$
+$python -m nuitka --remove-output --enable-plugin=pyside6 --enable-plugin=tk-inter --windows-console-mode=disable --onefile .\Kratztool.pyw$
 
 ToDo:
 -Alle int's die Spalten oder Zeilen definieren in Config schreiben und eindeutige Namen geben, wofür die jeweiligen Indizes stehen
