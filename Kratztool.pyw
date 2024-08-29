@@ -87,6 +87,7 @@ class Kratzomat(QWidget):
         self.AUFGABEN_PRO_KLASUR = len(AUFGABEN)
         self.PUNKTE_PRO_AUFGABE = list(AUFGABEN.values())
         self.PUNKTE_GESAMT = sum(self.PUNKTE_PRO_AUFGABE)
+        self.reset_active = False
         self.PREFIX_SPALTEN = 1
         self.SUFFIX_SPALTEN = 1
         self.SUMME_SPALTEN = self.PUNKTE_GESAMT + self.PREFIX_SPALTEN + self.AUFGABEN_PRO_KLASUR + self.SUFFIX_SPALTEN
@@ -392,13 +393,17 @@ class Kratzomat(QWidget):
         self._EinzelPunkteSumme()
 
     def _resetAllPoints(self) -> None:
+        """Setzt alle Punkte auf 0 und wählt erstes Instrument aus
+        """
+        self.reset_active = True
         for idx, widget in np.ndenumerate(self.PUNKTE_MATRIX_MITWIDGETS):
             widget.setText('-')
             self.CUR_SPALTE = 0
             self.CUR_ZEILE = 0
             self.PUNKTE_MATRIX_MITPUNKTEN[idx[0]][idx[1]] = 0
-            self._highlightCurCell()
-            self._EinzelPunkteSumme()
+        self._highlightCurCell()
+        self._EinzelPunkteSumme()
+        self.reset_active = False
         
     
     def _highlightCurCell(self):

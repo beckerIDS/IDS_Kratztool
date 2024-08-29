@@ -18,5 +18,5 @@ TOOL_TITLE = 'Kratztool: ESC reset all (dauert ein bisschen, pls chill bre), DEL
 logger_format = '%(asctime)s [Thread: %(threadName)s, Name: %(name)s:%(lineno)d] %(levelname)s: %(message)s'
 logger_custom_level = {
     "ressources.functions": logging.DEBUG,
-    "__main__":logging.INFO
+    "__main__":logging.DEBUG
 }
