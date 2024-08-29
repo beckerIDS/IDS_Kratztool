@@ -392,6 +392,7 @@ class Kratzomat(QWidget):
         self.PUNKTE_MATRIX_MITWIDGETS[row][col].setText("-")
         self._EinzelPunkteSumme()
 
+
     def _resetAllPoints(self) -> None:
         """Setzt alle Punkte auf 0 und wählt erstes Instrument aus
         """
@@ -407,31 +408,20 @@ class Kratzomat(QWidget):
         
     
     def _highlightCurCell(self):
-        if darkdetect.isDark():
-            for index, widget in np.ndenumerate(self.PUNKTE_MATRIX_MITWIDGETS):
-                if index[0] == self.CUR_ZEILE and index[1] == self.CUR_SPALTE:
-                    widget.setStyleSheet("background-color: green")
-                elif index[0] == self.CUR_ZEILE or index[1] == self.CUR_SPALTE:
-                    widget.setStyleSheet("background-color: darkkhaki")
-                else:
-                    widget.setStyleSheet("background-color: none")
-        else:
-            for index, widget in np.ndenumerate(self.PUNKTE_MATRIX_MITWIDGETS):
-                if index[0] == self.CUR_ZEILE and index[1] == self.CUR_SPALTE:
-                    widget.setStyleSheet("background-color: lightgreen")
-                elif index[0] == self.CUR_ZEILE or index[1] == self.CUR_SPALTE:
-                    widget.setStyleSheet("background-color: yellow")
-                else:
-                    widget.setStyleSheet("background-color: none")
-            
+        color = cfg.DARK if darkdetect.isDark() else cfg.LIGHT
+        for index, widget in np.ndenumerate(self.PUNKTE_MATRIX_MITWIDGETS):
+            if index[0] == self.CUR_ZEILE and index[1] == self.CUR_SPALTE:
+                widget.setStyleSheet(f"background-color: {color.current}")
+            elif index[0] == self.CUR_ZEILE or index[1] == self.CUR_SPALTE:
+                widget.setStyleSheet(f"background-color: {color.highlight}")
+            else:
+                widget.setStyleSheet(f"background-color: {color.background}")
+
 
     def _highlightPointSum(self) -> None:
-        if darkdetect.isDark():
-            for index, widget in np.ndenumerate(self.AUFGABEN_SUMMEN_MATRIX):
-                widget.setStyleSheet("background-color: purple; color: white")
-        else:
-             for index, widget in np.ndenumerate(self.AUFGABEN_SUMMEN_MATRIX):
-                widget.setStyleSheet("background-color: magenta; color: white")
+        color = cfg.DARK if darkdetect.isDark() else cfg.LIGHT
+        for _, widget in np.ndenumerate(self.AUFGABEN_SUMMEN_MATRIX):
+            widget.setStyleSheet(f"background-color: {color.sum_background}; color: {color.sum_font}")
 
 
 if __name__ == '__main__':

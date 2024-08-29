@@ -1,5 +1,6 @@
 import logging
 import os
+from dataclasses import dataclass
 
 ICON_FULLPATH = os.path.join(os.getcwd(),"ressources","icon.ico")
 
@@ -20,3 +21,29 @@ logger_custom_level = {
     "ressources.functions": logging.DEBUG,
     "__main__":logging.DEBUG
 }
+
+
+
+@dataclass
+class color_scheme():
+    background: str
+    highlight: str
+    current: str
+    sum_background: str
+    sum_font: str
+
+LIGHT = color_scheme(
+    background="none",
+    highlight="yellow",
+    current="lightgreen",
+    sum_background="magenta",
+    sum_font="white"
+)
+
+DARK = color_scheme(
+    background="none",
+    highlight="darkkhaki",
+    current="green",
+    sum_background="purple",
+    sum_font="white"
+)
