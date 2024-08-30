@@ -121,7 +121,7 @@ class Kratzomat(QWidget):
         self._highlightCurCell()
 
 
-    def initUI(self, alignment_header: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignVCenter):
+    def initUI(self, alignment_header: Qt.AlignmentFlag = Qt.AlignmentFlag.AlignCenter):
         """Füllt alle Widgets mit dem Starttext
 
         Args:
@@ -195,7 +195,7 @@ class Kratzomat(QWidget):
                     element = None
             if element is not None:
                 if (col_span is None) and (row_span is None):
-                    self.grid.addWidget(element, *position)
+                    self.grid.addWidget(element, *position,alignment_header)
                 else:
                     self.grid.addWidget(element, *position,row_span,col_span,alignment_header)
         self.move(300, 150)

@@ -13,7 +13,7 @@ ASK_AUFGABEN_DICT_ERROR = 'Eignabe entspricht nicht Dictionary Formatierung: AUF
 ASK_AUFGABEN_PUNKTZAHL_ERROR = 'Punkte pro Aufgabe muss größer 0 und kleiner 27 sein!!!'
 ASK_ANZAHLKLAUSUREN_TITLE = "Das ist der letzte Input, ich schwöre"
 ASK_ANZAHLKLAUSUREN_AUFFORDERUNG = "Wie viele Klausuren gibt es pro Mappe"
-TOOL_TITLE = 'Kratztool: ESC reset all (dauert ein bisschen, pls chill bre), DEL reset single entry, UP 1, DOWN 0, LEFT and RIGHT to navigate'
+TOOL_TITLE = 'Kratztool: ESC reset all, DEL reset single entry, UP 1, DOWN 0, LEFT and RIGHT to navigate'
 
 
 logger_format = '%(asctime)s [Thread: %(threadName)s, Name: %(name)s:%(lineno)d] %(levelname)s: %(message)s'
