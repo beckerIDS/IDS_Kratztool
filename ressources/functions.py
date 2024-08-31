@@ -1,6 +1,16 @@
 import logging
 from ressources import config as cfg
+import ast
+
+
 log = logging.getLogger(__name__)
+
+def validate_aufgaben_str(aufgaben: str) -> bool:
+    try:
+        aufgaben_dict = ast.literal_eval(f"{{{aufgaben}}}")
+        return True
+    except SyntaxError:
+        return False
 
 
 def _to_roman_numeral(value: int) -> str:

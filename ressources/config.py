@@ -4,6 +4,11 @@ from dataclasses import dataclass
 
 ICON_FULLPATH = os.path.join(os.getcwd(),"ressources","icon.ico")
 
+PREFIX_SPALTEN = 1
+SUFFIX_SPALTEN = 1
+PREFIX_ZEILEN = 2
+SUFFIX_ZEILEN = 1
+
 
 STANDARD_AUFGABEN_STR = '"Kurzfragen": 15,"A7": 10,"A8": 10,"A9": 10'
 STANDARD_AUFGABEN_DICT = {"Kurzfragen": 15,"A7": 10,"A8": 10,"A9": 10}
