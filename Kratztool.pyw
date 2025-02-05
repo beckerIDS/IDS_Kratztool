@@ -235,6 +235,14 @@ class Kratzomat(QWidget):
             pass
         elif a0.key() == Qt.Key.Key_Delete.value:
             self._resetSinglePoint(self.CUR_ZEILE,self.CUR_SPALTE)
+        elif a0.key() == Qt.Key.Key_Tab.value:  
+            summenPositionen = self.AUFGABEN_SUMMEN_POSITION-np.array([1,2,3,4])
+            idx = summenPositionen > self.CUR_SPALTE
+            summenPositionen = summenPositionen[idx]
+            toStep =  summenPositionen - self.CUR_SPALTE
+            toStep = np.min(toStep)
+            self.step(toStep)
+            self._EinzelPunkteSumme()
         else:           
             log.warning(f"Unknown key pressed, ID: {a0.key()}, name {a0.text()}")
         self.last_key = a0.key()
@@ -311,11 +319,15 @@ class Kratzomat(QWidget):
             # Prüfen, ob alle Punkte pro Teilaufgabe vergeben wurden
             einzelpunkte_widgets = self.PUNKTE_MATRIX_MITWIDGETS[pos[0]][teilaufgabe_punkte_start:teilaufgabe_punkte_ende]
             # if '-' in [x.text() for x in einzelpunkte_widgets]:
+            if '-' in [x.text() for x in einzelpunkte_widgets]:
             # if False:
             #     text = '-'
             # else:
             #     text = f"{teilaufgabe_punkte}"
-            text = f"{teilaufgabe_punkte}"
+                text = '-'
+            else:
+                text = f"{teilaufgabe_punkte}"
+            # text = f"{teilaufgabe_punkte}"
             widget.setText(text)
         self._GesamtSummen()
 
@@ -337,7 +349,7 @@ class Kratzomat(QWidget):
         for pos, widget in np.ndenumerate(self.SPALTENSUMMEN_WIDGET_VEKTOR):
             values = [elem.text() for elem in self.AUFGABEN_SUMMEN_MATRIX[:,pos[1]]]
             if all([item == '-' for item in values]):
-                text = "AUFGABEN-" + "\u03A3:"
+                text = "AUFGABEN-" + "\u03A3: -"
             else:
                 sum_cur_col = sum([int(digit) for digit in values if digit.isdigit()])
                 sum_col += sum_cur_col
@@ -348,7 +360,7 @@ class Kratzomat(QWidget):
         for pos, widget in np.ndenumerate(self.ZEILENSUMMEN_WIDGET_VEKTOR):
             values = [elem.text() for elem in self.AUFGABEN_SUMMEN_MATRIX[pos[1],:]]
             if all([item == '-' for item in values]):
-                text = "AUFGABEN-" + "\u03A3:"
+                text = "AUFGABEN-" + "\u03A3: 0"
             else:
                 sum_cur_row = sum([int(digit) for digit in values if digit.isdigit()])
                 sum_row += sum_cur_row
