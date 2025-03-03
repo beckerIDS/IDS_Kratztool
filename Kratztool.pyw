@@ -8,7 +8,7 @@ Create requirements.txt file if new packages have been used (ONLY WHEN USING VIR
 $pip freeze > requirements.txt$
 
 Command to pack tool to single .exe file
-$python -m nuitka --remove-output --enable-plugin=pyside6 --enable-plugin=tk-inter --windows-console-mode=disable --onefile .\Kratztool.pyw$
+$python -m auto_py_to_exe$
 
 ToDo:
 -Alle int's die Spalten oder Zeilen definieren in Config schreiben und eindeutige Namen geben, wofür die jeweiligen Indizes stehen
@@ -38,7 +38,7 @@ def init_app() -> None:
     # Initialize Tkinter window
     application_window = tk.Tk()
     application_window.withdraw()
-    application_window.iconbitmap(default=cfg.ICON_FULLPATH)
+    #application_window.iconbitmap(default=cfg.ICON_FULLPATH) # GIBT FEHLER BEI PACKEN MIT PYINSTALLER. CHECKE FOLGENDEN LINK: https://github.com/TomSchimansky/CustomTkinter/discussions/939
     # Get valid User Input or cancel
     while True:
         aufgaben = simpledialog.askstring(title=cfg.ASK_AUFGABEN_TITLE,
